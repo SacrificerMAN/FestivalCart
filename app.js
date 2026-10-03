@@ -61,7 +61,7 @@ function card(item) {
   const festival = getFestival(item.festival);
   const isSaved = state.saved.has(item.id);
   return `<article class="product-card">
-    <div class="product-image ${item.hue}" aria-hidden="true"><span>${item.visual}</span><span class="image-grain"></span><p>${festival.name}</p></div>
+    <div class="product-image ${item.hue} ${item.image ? 'has-photo' : ''}" aria-hidden="true">${item.image ? `<img src="${item.image}" alt="" />` : `<span>${item.visual}</span>`}<span class="image-grain"></span><p>${festival.name}</p></div>
     <div class="product-body">
       <p class="product-category">${CATEGORIES.find((category) => category.id === item.category).label}</p>
       <div class="product-title-line"><h3>${item.title}</h3><button class="save-card ${isSaved ? 'is-saved' : ''}" data-save="${item.id}" aria-label="${isSaved ? 'Remove' : 'Save'} ${item.title}" aria-pressed="${isSaved}">${isSaved ? '♥' : '♡'}</button></div>
