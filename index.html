@@ -94,6 +94,13 @@
               <div class="quantity-row"><span>Seasonal fruit</span><button data-quantity="seasonalFruit" data-change="-1" aria-label="Remove seasonal fruit">−</button><output id="qty-seasonalFruit">0 kg</output><button data-quantity="seasonalFruit" data-change="1" aria-label="Add seasonal fruit">+</button></div>
             </div>
             <div class="delivery-check"><label for="localArea">Delivery area / pincode</label><div><input id="localArea" placeholder="e.g. Chhapra or 841301" /><button id="checkArea" type="button">Check</button></div><p id="areaStatus">Enter your area to request a local delivery check.</p></div>
+            <div id="customerDetails" class="customer-details" hidden>
+              <p class="quantity-label">Your contact details</p>
+              <label for="customerPhone">Mobile number</label><input id="customerPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile number" />
+              <label for="customerAddress">Delivery address / village</label><textarea id="customerAddress" rows="2" autocomplete="street-address" placeholder="House/landmark and village or locality"></textarea>
+              <label for="deliveryDate">Preferred delivery date</label><input id="deliveryDate" type="date" />
+              <label class="consent-row"><input id="orderConsent" type="checkbox" /> <span>I agree that FestivalCart may save my contact and order request to arrange local delivery. No payment is collected here.</span></label>
+            </div>
             <button id="orderDraft" class="button button-warm order-draft" type="button">Sign in to prepare order <span aria-hidden="true">↗</span></button>
             <p id="orderStatus" class="order-status" aria-live="polite">Sign in is required before a local order request. No payment is collected here.</p>
           </div>
@@ -178,8 +185,8 @@
       </section>
     </dialog>
 
-    <script src="auth-config.js?v=20261004-3"></script>
-    <script type="module" src="app.js?v=20261004-3"></script>
+    <script src="auth-config.js?v=20261004-5"></script>
+    <script type="module" src="app.js?v=20261004-5"></script>
   </body>
 </html>
 
