@@ -1,0 +1,16 @@
+{
+  "name": "festivalcart",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A mobile-first Indian festival-shopping discovery front end.",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check app.js && node --check data/festivals.js && node --check data/catalog.js && node --check services/catalog-service.js",
+    "start": "npx --yes serve . -l 4173"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
+
