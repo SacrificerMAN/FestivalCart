@@ -4,7 +4,7 @@ import { CatalogService } from './services/catalog-service.js';
 import { Analytics } from './services/analytics.js';
 
 const catalog = new CatalogService();
-const state = { festival: 'all', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, pujaBasic: false } };
+const state = { festival: 'all', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, seasonalFruit: 0, pujaBasic: false } };
 
 const el = {
   festivalRail: document.querySelector('#festivalRail'),
@@ -118,7 +118,7 @@ function renderLocalOrder() {
 }
 
 function addFruitCombo() {
-  ['apple', 'banana', 'pomegranate', 'singhara'].forEach((item) => { state.localOrder[item] += 1; });
+  ['apple', 'banana', 'pomegranate', 'singhara', 'seasonalFruit'].forEach((item) => { state.localOrder[item] += 1; });
   renderLocalOrder();
   Analytics.track('local_combo_selected', { combo: 'fruit-five' });
 }
