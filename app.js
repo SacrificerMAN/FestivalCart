@@ -29,6 +29,7 @@ const el = {
   localArea: document.querySelector('#localArea'),
   areaStatus: document.querySelector('#areaStatus'),
   orderStatus: document.querySelector('#orderStatus'),
+  localCart: document.querySelector('#localCart'),
   signInButton: document.querySelector('#signInButton'),
   authDialog: document.querySelector('#authDialog'),
   googleSignIn: document.querySelector('#googleSignIn'),
@@ -83,15 +84,16 @@ function card(item) {
     ? `<a class="affiliate-link" href="${affiliateOffer.url}" target="_blank" rel="sponsored noopener noreferrer">Buy on ${affiliateOffer.marketplace}</a>`
     : '<span class="affiliate-pending">Affiliate link pending</span>';
   const orderAction = isLocalChhathItem
-    ? `<button class="local-add-link" data-local-add="${item.id}">${state.localOrder.catalogItems.includes(item.id) ? 'Added to local order' : 'Add to local order'}</button>`
+    ? `<button class="local-add-link" data-local-add="${item.id}">${state.localOrder.catalogItems.includes(item.id) ? 'Added to cart' : 'Add to cart'}</button>`
     : affiliateAction;
+  const saveAction = isLocalChhathItem ? '' : `<button class="save-link" data-save="${item.id}">${isSaved ? 'Saved' : 'Save idea'}</button>`;
   return `<article class="product-card">
     <div class="product-image ${item.hue} ${item.image ? 'has-photo' : ''}" aria-hidden="true">${item.image ? `<img src="${item.image}" alt="" />` : `<span>${item.visual}</span>`}<span class="image-grain"></span><p>${festival.name}</p></div>
     <div class="product-body">
       <p class="product-category">${CATEGORIES.find((category) => category.id === item.category).label}</p>
       <div class="product-title-line"><h3>${item.title}</h3><button class="save-card ${isSaved ? 'is-saved' : ''}" data-save="${item.id}" aria-label="${isSaved ? 'Remove' : 'Save'} ${item.title}" aria-pressed="${isSaved}">${isSaved ? '♥' : '♡'}</button></div>
       <p class="product-detail">${item.detail}</p>
-      <div class="product-footer"><span class="source-status"><i></i>${item.price ?? item.sourceStatus}</span><div class="product-actions">${orderAction}<button class="save-link" data-save="${item.id}">${isSaved ? 'Saved' : 'Save idea'}</button></div></div>
+      <div class="product-footer"><span class="source-status"><i></i>${item.price ?? item.sourceStatus}</span><div class="product-actions">${orderAction}${saveAction}</div></div>
     </div>
   </article>`;
 }
@@ -137,6 +139,10 @@ function renderLocalOrder() {
     document.querySelector(`#qty-${item}`).textContent = `${quantity} kg`;
   });
   document.querySelector('[data-combo="puja-basic"]').classList.toggle('is-selected', state.localOrder.pujaBasic);
+  const cartItems = state.localOrder.catalogItems.map((id) => catalog.getById(id)).filter(Boolean);
+  el.localCart.innerHTML = cartItems.length
+    ? `<p class="quantity-label">Added items</p>${cartItems.map((item) => `<div class="local-cart-row"><span>${item.title}</span><button data-local-remove="${item.id}" aria-label="Remove ${item.title}">Remove</button></div>`).join('')}`
+    : '';
 }
 
 function addFruitCombo() {
@@ -152,6 +158,7 @@ document.addEventListener('click', (event) => {
   const quantity = event.target.closest('[data-quantity]');
   const combo = event.target.closest('[data-combo]');
   const localAdd = event.target.closest('[data-local-add]');
+  const localRemove = event.target.closest('[data-local-remove]');
   if (filter) {
     state[filter.dataset.filterType] = filter.dataset.filterValue;
     render();
@@ -172,6 +179,11 @@ document.addEventListener('click', (event) => {
     renderProducts();
     document.querySelector('#local-order').scrollIntoView({ behavior: 'smooth', block: 'start' });
     el.orderStatus.textContent = 'Item added. Choose any other local items, then save your order request below.';
+  }
+  if (localRemove) {
+    state.localOrder.catalogItems = state.localOrder.catalogItems.filter((id) => id !== localRemove.dataset.localRemove);
+    renderLocalOrder();
+    renderProducts();
   }
 });
 
