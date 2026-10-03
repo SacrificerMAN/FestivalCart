@@ -4,7 +4,7 @@ import { CatalogService } from './services/catalog-service.js';
 import { Analytics } from './services/analytics.js';
 
 const catalog = new CatalogService();
-const state = { festival: 'all', category: 'all', query: '', saved: new Set() };
+const state = { festival: 'all', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, pujaBasic: false } };
 
 const el = {
   festivalRail: document.querySelector('#festivalRail'),
@@ -20,7 +20,11 @@ const el = {
   searchInput: document.querySelector('#searchInput'),
   savedDialog: document.querySelector('#savedDialog'),
   mobileMenu: document.querySelector('#mobileMenu'),
-  menuButton: document.querySelector('#menuButton')
+  menuButton: document.querySelector('#menuButton'),
+  comboCount: document.querySelector('#comboCount'),
+  localArea: document.querySelector('#localArea'),
+  areaStatus: document.querySelector('#areaStatus'),
+  orderStatus: document.querySelector('#orderStatus')
 };
 
 function getFestival(id) {
@@ -103,16 +107,41 @@ function toggleSaved(id) {
   Analytics.track('shortlist_toggled', { id, saved: state.saved.has(id) });
 }
 
+function renderLocalOrder() {
+  const fruits = Object.entries(state.localOrder).filter(([key]) => key !== 'pujaBasic').reduce((sum, [, quantity]) => sum + quantity, 0);
+  const extras = state.localOrder.pujaBasic ? 1 : 0;
+  el.comboCount.textContent = `${fruits + extras} ${fruits + extras === 1 ? 'item' : 'items'}`;
+  Object.entries(state.localOrder).filter(([key]) => key !== 'pujaBasic').forEach(([item, quantity]) => {
+    document.querySelector(`#qty-${item}`).textContent = `${quantity} kg`;
+  });
+  document.querySelector('[data-combo="puja-basic"]').classList.toggle('is-selected', state.localOrder.pujaBasic);
+}
+
+function addFruitCombo() {
+  ['apple', 'banana', 'pomegranate', 'singhara'].forEach((item) => { state.localOrder[item] += 1; });
+  renderLocalOrder();
+  Analytics.track('local_combo_selected', { combo: 'fruit-five' });
+}
+
 document.addEventListener('click', (event) => {
   const filter = event.target.closest('[data-filter-type]');
   const save = event.target.closest('[data-save]');
   const festivalCard = event.target.closest('.festival-card');
+  const quantity = event.target.closest('[data-quantity]');
+  const combo = event.target.closest('[data-combo]');
   if (filter) {
     state[filter.dataset.filterType] = filter.dataset.filterValue;
     render();
   }
   if (save) toggleSaved(save.dataset.save);
   if (festivalCard) setFestival(festivalCard.dataset.festival);
+  if (quantity) {
+    const item = quantity.dataset.quantity;
+    state.localOrder[item] = Math.max(0, state.localOrder[item] + Number(quantity.dataset.change));
+    renderLocalOrder();
+  }
+  if (combo?.dataset.combo === 'fruit-five') addFruitCombo();
+  if (combo?.dataset.combo === 'puja-basic') { state.localOrder.pujaBasic = !state.localOrder.pujaBasic; renderLocalOrder(); }
 });
 
 document.querySelector('#openSearch').addEventListener('click', () => {
@@ -137,7 +166,17 @@ el.menuButton.addEventListener('click', () => {
 document.querySelector('.close-menu').addEventListener('click', () => el.menuButton.click());
 document.querySelectorAll('.mobile-menu a').forEach((link) => link.addEventListener('click', () => el.menuButton.click()));
 el.festivalRail.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { const card = event.target.closest('.festival-card'); if (card) setFestival(card.dataset.festival); } });
+document.querySelector('#checkArea').addEventListener('click', () => {
+  const area = el.localArea.value.trim();
+  el.areaStatus.textContent = area ? `${area}: local delivery availability will be confirmed by the FestivalCart team.` : 'Enter Chhapra city, your village, or pincode first.';
+});
+document.querySelector('#orderDraft').addEventListener('click', () => {
+  const selected = Object.entries(state.localOrder).filter(([key, value]) => key === 'pujaBasic' ? value : value > 0);
+  el.orderStatus.textContent = selected.length ? 'Order request prepared on this device. Share your selected items, area and delivery date with the local FestivalCart team for final rate and payment.' : 'Choose a combo or at least one 1 kg fruit portion first.';
+  Analytics.track('local_order_draft_requested', { selected: selected.map(([key]) => key) });
+});
 
 renderFestivalRail();
 render();
+renderLocalOrder();
 
