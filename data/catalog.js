@@ -8,7 +8,7 @@ export const CATEGORIES = [
 
 // Idea records are deliberately provider-neutral. Live price / seller fields are null
 // until a marketplace adapter returns a verified, attributed offer.
-export const CATALOG = [
+const RAW_CATALOG = [
   { id: 'chhath-pomegranate', title: 'Anar · Pomegranate', festival: 'chhath-puja', category: 'ritual', hue: 'sunrise', visual: '✦', image: 'assets/images/chhath-pomegranate.png', detail: 'Individual pomegranate visual for a Chhath offering list.', tags: ['chhath', 'anar', 'pomegranate', 'fruit'], price: null, sourceStatus: 'Visual concept · not yet verified for local sourcing' },
   { id: 'chhath-paan', title: 'Paan · Betel leaves', festival: 'chhath-puja', category: 'ritual', hue: 'sage', visual: '◈', image: 'assets/images/chhath-paan.png', detail: 'Individual betel leaves visual for the puja list.', tags: ['chhath', 'paan', 'betel leaves', 'puja'], price: null, sourceStatus: 'Visual concept · not yet verified for local sourcing' },
   { id: 'chhath-apple', title: 'Seb · Apple', festival: 'chhath-puja', category: 'ritual', hue: 'sunrise', visual: '✦', image: 'assets/images/chhath-apple.png', detail: 'Individual apple visual for a Chhath offering list.', tags: ['chhath', 'apple', 'seb', 'fruit'], price: null, sourceStatus: 'Visual concept · not yet verified for local sourcing' },
@@ -35,4 +35,8 @@ export const CATALOG = [
   { id: 'rangoli-path', title: 'Colour underfoot', festival: 'diwali', category: 'decor', hue: 'ultramarine', visual: '✳', detail: 'A rangoli-inspired welcome with considered colour and texture.', tags: ['rangoli', 'floor', 'welcome'], price: null, sourceStatus: 'Awaiting verified listings' },
   { id: 'host-gift', title: 'The host gift edit', festival: 'christmas', category: 'gifting', hue: 'pine', visual: '✦', detail: 'Small, practical gestures that feel personal, not generic.', tags: ['gift', 'host', 'present'], price: null, sourceStatus: 'Awaiting verified listings' }
 ];
+
+// Populate only after a merchant has approved a real, attributable affiliate URL.
+// Each offer supports: { marketplace, url, seller, verifiedAt }.
+export const CATALOG = RAW_CATALOG.map((item) => ({ ...item, affiliateOffers: [] }));
 
