@@ -71,6 +71,32 @@
           </div>
         </section>
 
+        <section id="local-order" class="local-order" aria-labelledby="local-order-heading">
+          <div class="local-order-intro">
+            <p class="eyebrow">Chhapra local delivery · draft service</p>
+            <h2 id="local-order-heading">Build a Chhath<br /><em>fruit combo.</em></h2>
+            <p>Choose a ready bundle or add 1 kg fruit portions. Final stock, rate and delivery slot are confirmed locally before any payment.</p>
+            <div class="local-notes"><span>01 · Chhapra city + nearby villages</span><span>02 · No price claimed until verified</span></div>
+          </div>
+          <div class="combo-builder">
+            <div class="combo-topline"><p>YOUR LOCAL ORDER</p><strong id="comboCount">0 items</strong></div>
+            <div class="combo-options" aria-label="Choose a local Chhath combo">
+              <button class="combo-option" data-combo="fruit-five"><span>01</span><strong>5 fruit · 1 kg each</strong><small>Apple, banana, pomegranate, singhara &amp; seasonal fruit</small><b>5 kg fruit combo</b></button>
+              <button class="combo-option" data-combo="puja-basic"><span>02</span><strong>Puja essentials</strong><small>Rice, turmeric, coconut, diya &amp; bamboo soop</small><b>Ritual combo</b></button>
+            </div>
+            <div class="quantity-list" aria-label="Add individual fruit quantities">
+              <p class="quantity-label">Add 1 kg portions</p>
+              <div class="quantity-row"><span>Apple</span><button data-quantity="apple" data-change="-1" aria-label="Remove apple">−</button><output id="qty-apple">0 kg</output><button data-quantity="apple" data-change="1" aria-label="Add apple">+</button></div>
+              <div class="quantity-row"><span>Banana</span><button data-quantity="banana" data-change="-1" aria-label="Remove banana">−</button><output id="qty-banana">0 kg</output><button data-quantity="banana" data-change="1" aria-label="Add banana">+</button></div>
+              <div class="quantity-row"><span>Pomegranate</span><button data-quantity="pomegranate" data-change="-1" aria-label="Remove pomegranate">−</button><output id="qty-pomegranate">0 kg</output><button data-quantity="pomegranate" data-change="1" aria-label="Add pomegranate">+</button></div>
+              <div class="quantity-row"><span>Singhara</span><button data-quantity="singhara" data-change="-1" aria-label="Remove singhara">−</button><output id="qty-singhara">0 kg</output><button data-quantity="singhara" data-change="1" aria-label="Add singhara">+</button></div>
+            </div>
+            <div class="delivery-check"><label for="localArea">Delivery area / pincode</label><div><input id="localArea" placeholder="e.g. Chhapra or 841301" /><button id="checkArea" type="button">Check</button></div><p id="areaStatus">Enter your area to request a local delivery check.</p></div>
+            <button id="orderDraft" class="button button-warm order-draft" type="button">Prepare local order request <span aria-hidden="true">↗</span></button>
+            <p id="orderStatus" class="order-status" aria-live="polite">No payment is collected here. Rates and availability stay subject to local confirmation.</p>
+          </div>
+        </section>
+
         <section id="festivals" class="festival-strip" aria-labelledby="festival-heading">
           <div class="section-head compact">
             <div>
