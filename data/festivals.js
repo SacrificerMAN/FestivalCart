@@ -30,6 +30,16 @@ export const FESTIVALS = [
     accent: 'Light, warmth, togetherness'
   },
   {
+    id: 'chhath-puja',
+    name: 'Chhath Puja',
+    date: '2026-11-15',
+    displayDate: '15 Nov',
+    weekday: 'Sunday',
+    month: 'November',
+    tone: 'sunrise',
+    accent: 'Offerings at sunrise'
+  },
+  {
     id: 'guru-nanak-jayanti',
     name: 'Guru Nanak Jayanti',
     date: '2026-11-24',
