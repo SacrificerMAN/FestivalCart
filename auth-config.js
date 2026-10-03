@@ -6,10 +6,10 @@
 */
 window.FESTIVALCART_AUTH_CONFIG = {
   firebase: {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    appId: ''
+    apiKey: 'AIzaSyBa3XoDJJxToePHaeZk4oECKmP20g3W_AI',
+    authDomain: 'festivalcart.firebaseapp.com',
+    projectId: 'festivalcart',
+    appId: '1:616333327667:web:335f3ce386353cc2c61246'
   }
 };
 
