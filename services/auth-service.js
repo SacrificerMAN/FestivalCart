@@ -9,6 +9,7 @@ export class AuthService {
   constructor() {
     this.user = null;
     this.auth = null;
+    this.app = null;
     this.ready = false;
   }
 
@@ -18,7 +19,8 @@ export class AuthService {
       import(`${firebaseModules}/firebase-app.js`),
       import(`${firebaseModules}/firebase-auth.js`)
     ]);
-    this.auth = getAuth(initializeApp(window.FESTIVALCART_AUTH_CONFIG.firebase));
+    this.app = initializeApp(window.FESTIVALCART_AUTH_CONFIG.firebase);
+    this.auth = getAuth(this.app);
     this.provider = new GoogleAuthProvider();
     this.signInWithPopup = signInWithPopup;
     this.signOut = signOut;
