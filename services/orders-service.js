@@ -17,8 +17,9 @@ export class OrdersService {
     if (!this.db || !this.auth.user) throw new Error('Order database is not ready yet.');
     const { addDoc, collection, serverTimestamp } = await import(`${firebaseModules}/firebase-firestore.js`);
     const items = Object.entries(localOrder)
-      .filter(([key, value]) => key === 'pujaBasic' ? value : value > 0)
+      .filter(([key, value]) => key !== 'catalogItems' && (key === 'pujaBasic' ? value : value > 0))
       .map(([key, value]) => ({ item: key, quantityKg: key === 'pujaBasic' ? null : value }));
+    items.push(...(localOrder.catalogItems || []).map((item) => ({ item, quantityKg: null })));
     return addDoc(collection(this.db, 'orders'), {
       customer: { uid: this.auth.user.uid, name: this.auth.user.displayName || null, email: this.auth.user.email || null, phone, address, area },
       items,
