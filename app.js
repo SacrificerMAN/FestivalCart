@@ -2,8 +2,10 @@ import { FESTIVALS, getUpcomingFestivals } from './data/festivals.js';
 import { CATEGORIES } from './data/catalog.js';
 import { CatalogService } from './services/catalog-service.js';
 import { Analytics } from './services/analytics.js';
+import { AuthService } from './services/auth-service.js';
 
 const catalog = new CatalogService();
+const auth = new AuthService();
 const state = { festival: 'all', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, seasonalFruit: 0, pujaBasic: false } };
 
 const el = {
@@ -24,7 +26,11 @@ const el = {
   comboCount: document.querySelector('#comboCount'),
   localArea: document.querySelector('#localArea'),
   areaStatus: document.querySelector('#areaStatus'),
-  orderStatus: document.querySelector('#orderStatus')
+  orderStatus: document.querySelector('#orderStatus'),
+  signInButton: document.querySelector('#signInButton'),
+  authDialog: document.querySelector('#authDialog'),
+  googleSignIn: document.querySelector('#googleSignIn'),
+  authStatus: document.querySelector('#authStatus')
 };
 
 function getFestival(id) {
@@ -171,12 +177,57 @@ document.querySelector('#checkArea').addEventListener('click', () => {
   el.areaStatus.textContent = area ? `${area}: local delivery availability will be confirmed by the FestivalCart team.` : 'Enter Chhapra city, your village, or pincode first.';
 });
 document.querySelector('#orderDraft').addEventListener('click', () => {
+  if (!auth.isSignedIn()) {
+    el.authDialog.showModal();
+    el.orderStatus.textContent = 'Please sign in with Google before preparing a local order request.';
+    Analytics.track('sign_in_required_for_order');
+    return;
+  }
   const selected = Object.entries(state.localOrder).filter(([key, value]) => key === 'pujaBasic' ? value : value > 0);
   el.orderStatus.textContent = selected.length ? 'Order request prepared on this device. Share your selected items, area and delivery date with the local FestivalCart team for final rate and payment.' : 'Choose a combo or at least one 1 kg fruit portion first.';
   Analytics.track('local_order_draft_requested', { selected: selected.map(([key]) => key) });
 });
 
+function openAuthDialog() {
+  el.authStatus.textContent = auth.isConfigured()
+    ? 'Sign in securely with Google to continue.'
+    : 'Google sign-in needs the FestivalCart Firebase web configuration before it can be turned on.';
+  el.googleSignIn.disabled = !auth.isConfigured();
+  el.authDialog.showModal();
+}
+
+function updateAuthUi(user) {
+  if (user) {
+    el.signInButton.textContent = `Hi, ${user.displayName?.split(' ')[0] || 'there'}`;
+    el.signInButton.classList.add('is-signed-in');
+    el.signInButton.setAttribute('aria-label', 'You are signed in with Google');
+    el.orderStatus.textContent = 'Signed in. Choose your combo, then prepare your local order request.';
+  } else {
+    el.signInButton.textContent = 'Sign in';
+    el.signInButton.classList.remove('is-signed-in');
+  }
+}
+
+el.signInButton.addEventListener('click', openAuthDialog);
+document.querySelector('#closeAuth').addEventListener('click', () => el.authDialog.close());
+el.googleSignIn.addEventListener('click', async () => {
+  try {
+    el.googleSignIn.disabled = true;
+    el.authStatus.textContent = 'Opening secure Google sign-in…';
+    await auth.signIn();
+    el.authDialog.close();
+    Analytics.track('google_sign_in_completed');
+  } catch (error) {
+    el.authStatus.textContent = error.message || 'Google sign-in could not be completed. Please try again.';
+    el.googleSignIn.disabled = false;
+    Analytics.track('google_sign_in_failed');
+  }
+});
+
 renderFestivalRail();
 render();
 renderLocalOrder();
+auth.initialize(updateAuthUi).catch(() => {
+  el.authStatus.textContent = 'Google sign-in configuration could not be loaded.';
+});
 
