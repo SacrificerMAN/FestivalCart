@@ -3,9 +3,11 @@ import { CATEGORIES } from './data/catalog.js';
 import { CatalogService } from './services/catalog-service.js';
 import { Analytics } from './services/analytics.js';
 import { AuthService } from './services/auth-service.js';
+import { OrdersService } from './services/orders-service.js';
 
 const catalog = new CatalogService();
 const auth = new AuthService();
+const orders = new OrdersService(auth);
 const state = { festival: 'all', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, seasonalFruit: 0, pujaBasic: false } };
 
 const el = {
@@ -30,7 +32,12 @@ const el = {
   signInButton: document.querySelector('#signInButton'),
   authDialog: document.querySelector('#authDialog'),
   googleSignIn: document.querySelector('#googleSignIn'),
-  authStatus: document.querySelector('#authStatus')
+  authStatus: document.querySelector('#authStatus'),
+  customerDetails: document.querySelector('#customerDetails'),
+  customerPhone: document.querySelector('#customerPhone'),
+  customerAddress: document.querySelector('#customerAddress'),
+  deliveryDate: document.querySelector('#deliveryDate'),
+  orderConsent: document.querySelector('#orderConsent')
 };
 
 function getFestival(id) {
@@ -176,7 +183,7 @@ document.querySelector('#checkArea').addEventListener('click', () => {
   const area = el.localArea.value.trim();
   el.areaStatus.textContent = area ? `${area}: local delivery availability will be confirmed by the FestivalCart team.` : 'Enter Chhapra city, your village, or pincode first.';
 });
-document.querySelector('#orderDraft').addEventListener('click', () => {
+document.querySelector('#orderDraft').addEventListener('click', async () => {
   if (!auth.isSignedIn()) {
     el.authDialog.showModal();
     el.orderStatus.textContent = 'Please sign in with Google before preparing a local order request.';
@@ -184,8 +191,20 @@ document.querySelector('#orderDraft').addEventListener('click', () => {
     return;
   }
   const selected = Object.entries(state.localOrder).filter(([key, value]) => key === 'pujaBasic' ? value : value > 0);
-  el.orderStatus.textContent = selected.length ? 'Order request prepared on this device. Share your selected items, area and delivery date with the local FestivalCart team for final rate and payment.' : 'Choose a combo or at least one 1 kg fruit portion first.';
-  Analytics.track('local_order_draft_requested', { selected: selected.map(([key]) => key) });
+  const phone = el.customerPhone.value.replace(/\s|-/g, '');
+  if (!selected.length) { el.orderStatus.textContent = 'Choose a combo or at least one 1 kg fruit portion first.'; return; }
+  if (!/^\d{10}$/.test(phone)) { el.orderStatus.textContent = 'Enter a valid 10-digit mobile number.'; el.customerPhone.focus(); return; }
+  if (!el.customerAddress.value.trim()) { el.orderStatus.textContent = 'Enter delivery address or village details.'; el.customerAddress.focus(); return; }
+  if (!el.orderConsent.checked) { el.orderStatus.textContent = 'Please confirm consent before sending your order request.'; el.orderConsent.focus(); return; }
+  try {
+    el.orderStatus.textContent = 'Saving your local order request…';
+    await orders.submit({ localOrder: state.localOrder, area: el.localArea.value.trim(), phone, address: el.customerAddress.value.trim(), deliveryDate: el.deliveryDate.value });
+    el.orderStatus.textContent = 'Order request saved. FestivalCart team will confirm stock, rate and delivery slot before any payment.';
+    Analytics.track('local_order_request_saved', { selected: selected.map(([key]) => key) });
+  } catch (error) {
+    el.orderStatus.textContent = 'Order database is not enabled yet. Please try again after the FestivalCart team completes setup.';
+    Analytics.track('local_order_request_failed', { reason: error.code || 'database_unavailable' });
+  }
 });
 
 function openAuthDialog() {
@@ -202,9 +221,14 @@ function updateAuthUi(user) {
     el.signInButton.classList.add('is-signed-in');
     el.signInButton.setAttribute('aria-label', 'You are signed in with Google');
     el.orderStatus.textContent = 'Signed in. Choose your combo, then prepare your local order request.';
+    el.customerDetails.hidden = false;
+    document.querySelector('#orderDraft').textContent = 'Save local order request ↗';
+    orders.initialize().catch(() => { el.orderStatus.textContent = 'Order database is being prepared.'; });
   } else {
     el.signInButton.textContent = 'Sign in';
     el.signInButton.classList.remove('is-signed-in');
+    el.customerDetails.hidden = true;
+    document.querySelector('#orderDraft').textContent = 'Sign in to prepare order ↗';
   }
 }
 
