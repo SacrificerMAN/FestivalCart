@@ -31,6 +31,12 @@ Open `http://localhost:4173` after starting the local server.
 | Affiliate links | a source-link resolver after disclosure and compliance review |
 | Analytics | `Analytics.track()` event boundary |
 
+## Local order data
+
+Google sign-in is configured with Firebase Authentication. The local-order flow only collects a mobile number and delivery details after the customer is signed in and explicitly agrees to the order-data notice.
+
+Cloud Firestore is intended for the `orders` collection. Before deploying the order form, apply the production rule in `firestore.rules` from the Firebase Console's **Firestore Database → Rules** tab. It permits a signed-in customer to create only their own request and keeps every order private; Firebase Console administrators can still view requests.
+
 ## Festival-date sources
 
 - [India Post: All India Holidays 2026](https://www.indiapost.gov.in/holidays-list)
@@ -38,3 +44,4 @@ Open `http://localhost:4173` after starting the local server.
 - [Drik Panchang: 2026 Indian Calendar](https://www.drikpanchang.com/calendars/indian/indiancalendar.html?lang=en)
 
 Dates for lunar festivals can vary by city and local tradition. Always confirm worship timing locally.
+
