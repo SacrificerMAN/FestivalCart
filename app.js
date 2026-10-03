@@ -8,7 +8,7 @@ import { OrdersService } from './services/orders-service.js';
 const catalog = new CatalogService();
 const auth = new AuthService();
 const orders = new OrdersService(auth);
-const state = { festival: 'all', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, seasonalFruit: 0, pujaBasic: false } };
+const state = { festival: 'all', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, seasonalFruit: 0, pujaBasic: false, catalogItems: [] } };
 
 const el = {
   festivalRail: document.querySelector('#festivalRail'),
@@ -77,17 +77,21 @@ function renderFilters() {
 function card(item) {
   const festival = getFestival(item.festival);
   const isSaved = state.saved.has(item.id);
+  const isLocalChhathItem = item.festival === 'chhath-puja' && !item.id.startsWith('affiliate-');
   const affiliateOffer = item.affiliateOffers?.[0];
   const affiliateAction = affiliateOffer
     ? `<a class="affiliate-link" href="${affiliateOffer.url}" target="_blank" rel="sponsored noopener noreferrer">Buy on ${affiliateOffer.marketplace}</a>`
     : '<span class="affiliate-pending">Affiliate link pending</span>';
+  const orderAction = isLocalChhathItem
+    ? `<button class="local-add-link" data-local-add="${item.id}">${state.localOrder.catalogItems.includes(item.id) ? 'Added to local order' : 'Add to local order'}</button>`
+    : affiliateAction;
   return `<article class="product-card">
     <div class="product-image ${item.hue} ${item.image ? 'has-photo' : ''}" aria-hidden="true">${item.image ? `<img src="${item.image}" alt="" />` : `<span>${item.visual}</span>`}<span class="image-grain"></span><p>${festival.name}</p></div>
     <div class="product-body">
       <p class="product-category">${CATEGORIES.find((category) => category.id === item.category).label}</p>
       <div class="product-title-line"><h3>${item.title}</h3><button class="save-card ${isSaved ? 'is-saved' : ''}" data-save="${item.id}" aria-label="${isSaved ? 'Remove' : 'Save'} ${item.title}" aria-pressed="${isSaved}">${isSaved ? '♥' : '♡'}</button></div>
       <p class="product-detail">${item.detail}</p>
-      <div class="product-footer"><span class="source-status"><i></i>${item.price ?? item.sourceStatus}</span><div class="product-actions">${affiliateAction}<button class="save-link" data-save="${item.id}">${isSaved ? 'Saved' : 'Save idea'}</button></div></div>
+      <div class="product-footer"><span class="source-status"><i></i>${item.price ?? item.sourceStatus}</span><div class="product-actions">${orderAction}<button class="save-link" data-save="${item.id}">${isSaved ? 'Saved' : 'Save idea'}</button></div></div>
     </div>
   </article>`;
 }
@@ -125,10 +129,11 @@ function toggleSaved(id) {
 }
 
 function renderLocalOrder() {
-  const fruits = Object.entries(state.localOrder).filter(([key]) => key !== 'pujaBasic').reduce((sum, [, quantity]) => sum + quantity, 0);
+  const fruits = Object.entries(state.localOrder).filter(([key]) => key !== 'pujaBasic' && key !== 'catalogItems').reduce((sum, [, quantity]) => sum + quantity, 0);
   const extras = state.localOrder.pujaBasic ? 1 : 0;
-  el.comboCount.textContent = `${fruits + extras} ${fruits + extras === 1 ? 'item' : 'items'}`;
-  Object.entries(state.localOrder).filter(([key]) => key !== 'pujaBasic').forEach(([item, quantity]) => {
+  const total = fruits + extras + state.localOrder.catalogItems.length;
+  el.comboCount.textContent = `${total} ${total === 1 ? 'item' : 'items'}`;
+  Object.entries(state.localOrder).filter(([key]) => key !== 'pujaBasic' && key !== 'catalogItems').forEach(([item, quantity]) => {
     document.querySelector(`#qty-${item}`).textContent = `${quantity} kg`;
   });
   document.querySelector('[data-combo="puja-basic"]').classList.toggle('is-selected', state.localOrder.pujaBasic);
@@ -146,6 +151,7 @@ document.addEventListener('click', (event) => {
   const festivalCard = event.target.closest('.festival-card');
   const quantity = event.target.closest('[data-quantity]');
   const combo = event.target.closest('[data-combo]');
+  const localAdd = event.target.closest('[data-local-add]');
   if (filter) {
     state[filter.dataset.filterType] = filter.dataset.filterValue;
     render();
@@ -159,6 +165,14 @@ document.addEventListener('click', (event) => {
   }
   if (combo?.dataset.combo === 'fruit-five') addFruitCombo();
   if (combo?.dataset.combo === 'puja-basic') { state.localOrder.pujaBasic = !state.localOrder.pujaBasic; renderLocalOrder(); }
+  if (localAdd) {
+    const id = localAdd.dataset.localAdd;
+    if (!state.localOrder.catalogItems.includes(id)) state.localOrder.catalogItems.push(id);
+    renderLocalOrder();
+    renderProducts();
+    document.querySelector('#local-order').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.orderStatus.textContent = 'Item added. Choose any other local items, then save your order request below.';
+  }
 });
 
 document.querySelector('#openSearch').addEventListener('click', () => {
@@ -194,7 +208,7 @@ document.querySelector('#orderDraft').addEventListener('click', async () => {
     Analytics.track('sign_in_required_for_order');
     return;
   }
-  const selected = Object.entries(state.localOrder).filter(([key, value]) => key === 'pujaBasic' ? value : value > 0);
+  const selected = Object.entries(state.localOrder).filter(([key, value]) => key === 'pujaBasic' ? value : key === 'catalogItems' ? value.length > 0 : value > 0);
   const phone = el.customerPhone.value.replace(/\s|-/g, '');
   if (!selected.length) { el.orderStatus.textContent = 'Choose a combo or at least one 1 kg fruit portion first.'; return; }
   if (!/^\d{10}$/.test(phone)) { el.orderStatus.textContent = 'Enter a valid 10-digit mobile number.'; el.customerPhone.focus(); return; }
