@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20261004-6" />
+    <link rel="stylesheet" href="styles.css?v=20261004-7" />
   </head>
   <body>
     <a class="skip-link" href="#discover">Skip to collections</a>
@@ -32,6 +32,7 @@
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.15a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"/></svg>
           </button>
           <button id="savedButton" class="saved-button" aria-label="Open saved ideas"><span aria-hidden="true">♡</span><span>Saved</span><span id="savedCount" class="count">0</span></button>
+          <button id="cartButton" class="saved-button cart-button" aria-label="Open local cart"><span aria-hidden="true">🛒</span><span>Cart</span><span id="cartCount" class="count">0</span></button>
           <button id="menuButton" class="icon-button menu-button" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu">
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
           </button>
@@ -183,6 +184,15 @@
       <section class="saved-panel"><div class="search-panel-head"><div><p class="eyebrow">Your shortlist</p><h2>Saved ideas</h2></div><button class="icon-button close-dialog" aria-label="Close saved ideas">×</button></div><div id="savedList" class="saved-list"></div></section>
     </dialog>
 
+    <dialog id="cartDialog" class="saved-dialog">
+      <section class="saved-panel" aria-labelledby="cart-heading">
+        <div class="search-panel-head"><div><p class="eyebrow">FestivalCart local shop</p><h2 id="cart-heading">Your cart</h2></div><button class="icon-button close-dialog" aria-label="Close cart">×</button></div>
+        <p class="cart-note">Final stock, rate and delivery slot are confirmed by the local team before payment. COD only for now.</p>
+        <div id="cartDialogItems" class="saved-list"></div>
+        <button id="goToCheckout" class="button button-warm cart-checkout" type="button">Continue to COD details <span aria-hidden="true">↘</span></button>
+      </section>
+    </dialog>
+
     <dialog id="authDialog" class="auth-dialog">
       <section class="auth-panel" aria-labelledby="auth-heading">
         <button id="closeAuth" class="icon-button auth-close" type="button" aria-label="Close sign in">×</button>
@@ -196,7 +206,7 @@
     </dialog>
 
     <script src="auth-config.js?v=20261004-5"></script>
-    <script type="module" src="app.js?v=20261004-5"></script>
+    <script type="module" src="app.js?v=20261004-7"></script>
   </body>
 </html>
 
