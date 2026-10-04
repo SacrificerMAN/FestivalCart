@@ -1,4 +1,4 @@
-import { CATALOG } from '../data/catalog.js';
+import { CATALOG } from '../data/catalog.js?v=20261005-2';
 
 /**
  * UI-facing catalog boundary. Replace the in-memory records with normalized,
