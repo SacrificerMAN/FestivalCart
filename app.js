@@ -8,7 +8,7 @@ import { OrdersService } from './services/orders-service.js';
 const catalog = new CatalogService();
 const auth = new AuthService();
 const orders = new OrdersService(auth);
-const state = { festival: 'all', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, seasonalFruit: 0, pujaBasic: false, catalogItems: [] } };
+const state = { festival: 'chhath-puja', category: 'all', query: '', saved: new Set(), localOrder: { apple: 0, banana: 0, pomegranate: 0, singhara: 0, seasonalFruit: 0, pujaBasic: false, catalogItems: [] } };
 
 const el = {
   festivalRail: document.querySelector('#festivalRail'),
@@ -102,7 +102,7 @@ function card(item) {
 }
 
 function renderProducts() {
-  const items = catalog.search(state);
+  const items = catalog.search(state).filter((item) => !item.id.startsWith('affiliate-'));
   el.resultsCount.textContent = pluralize(items.length, 'idea');
   el.productGrid.innerHTML = items.map(card).join('');
   el.emptyState.hidden = Boolean(items.length);
@@ -222,7 +222,7 @@ document.querySelector('#goToCheckout').addEventListener('click', () => {
   el.localArea.focus({ preventScroll: true });
 });
 document.querySelector('#clearFilters').addEventListener('click', () => {
-  state.festival = 'all'; state.category = 'all'; state.query = ''; el.searchInput.value = ''; render();
+  state.festival = 'chhath-puja'; state.category = 'all'; state.query = ''; el.searchInput.value = ''; render();
 });
 document.querySelector('#filterButton').addEventListener('click', () => document.querySelector('#festivalFilters').scrollIntoView({ behavior: 'smooth', block: 'center' }));
 el.menuButton.addEventListener('click', () => {
