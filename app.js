@@ -23,6 +23,9 @@ const el = {
   searchDialog: document.querySelector('#searchDialog'),
   searchInput: document.querySelector('#searchInput'),
   savedDialog: document.querySelector('#savedDialog'),
+  cartDialog: document.querySelector('#cartDialog'),
+  cartCount: document.querySelector('#cartCount'),
+  cartDialogItems: document.querySelector('#cartDialogItems'),
   mobileMenu: document.querySelector('#mobileMenu'),
   menuButton: document.querySelector('#menuButton'),
   comboCount: document.querySelector('#comboCount'),
@@ -130,19 +133,35 @@ function toggleSaved(id) {
   Analytics.track('shortlist_toggled', { id, saved: state.saved.has(id) });
 }
 
+function getLocalCartLines() {
+  const fruitNames = { apple: 'Apple', banana: 'Banana', pomegranate: 'Pomegranate', singhara: 'Singhara', seasonalFruit: 'Seasonal fruit' };
+  const portions = Object.entries(fruitNames)
+    .filter(([id]) => state.localOrder[id] > 0)
+    .map(([id, title]) => ({ id, title: `${title} · ${state.localOrder[id]} kg`, removable: false }));
+  const pujaBasic = state.localOrder.pujaBasic ? [{ id: 'puja-basic', title: 'Puja essentials basic set', removable: false }] : [];
+  const catalogItems = state.localOrder.catalogItems
+    .map((id) => catalog.getById(id))
+    .filter(Boolean)
+    .map((item) => ({ id: item.id, title: item.title, removable: true }));
+  return [...portions, ...pujaBasic, ...catalogItems];
+}
+
 function renderLocalOrder() {
   const fruits = Object.entries(state.localOrder).filter(([key]) => key !== 'pujaBasic' && key !== 'catalogItems').reduce((sum, [, quantity]) => sum + quantity, 0);
   const extras = state.localOrder.pujaBasic ? 1 : 0;
   const total = fruits + extras + state.localOrder.catalogItems.length;
   el.comboCount.textContent = `${total} ${total === 1 ? 'item' : 'items'}`;
+  el.cartCount.textContent = total;
   Object.entries(state.localOrder).filter(([key]) => key !== 'pujaBasic' && key !== 'catalogItems').forEach(([item, quantity]) => {
     document.querySelector(`#qty-${item}`).textContent = `${quantity} kg`;
   });
   document.querySelector('[data-combo="puja-basic"]').classList.toggle('is-selected', state.localOrder.pujaBasic);
-  const cartItems = state.localOrder.catalogItems.map((id) => catalog.getById(id)).filter(Boolean);
-  el.localCart.innerHTML = cartItems.length
-    ? `<p class="quantity-label">Added items</p>${cartItems.map((item) => `<div class="local-cart-row"><span>${item.title}</span><button data-local-remove="${item.id}" aria-label="Remove ${item.title}">Remove</button></div>`).join('')}`
-    : '';
+  const lines = getLocalCartLines();
+  const lineMarkup = lines.map((item) => `<div class="local-cart-row"><span>${item.title}</span>${item.removable ? `<button data-local-remove="${item.id}" aria-label="Remove ${item.title}">Remove</button>` : '<span class="cart-portion">Adjust below</span>'}</div>`).join('');
+  el.localCart.innerHTML = lines.length ? `<p class="quantity-label">Your local cart</p>${lineMarkup}` : '';
+  el.cartDialogItems.innerHTML = lines.length
+    ? lineMarkup
+    : '<div class="saved-empty"><span>🛒</span><p>Your cart is empty. Add Chhath items or build a fruit combo first.</p></div>';
 }
 
 function addFruitCombo() {
@@ -177,8 +196,7 @@ document.addEventListener('click', (event) => {
     if (!state.localOrder.catalogItems.includes(id)) state.localOrder.catalogItems.push(id);
     renderLocalOrder();
     renderProducts();
-    document.querySelector('#local-order').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    el.orderStatus.textContent = 'Item added. Choose any other local items, then save your order request below.';
+    el.orderStatus.textContent = 'Item added to your cart. Open Cart when you are ready for COD details.';
   }
   if (localRemove) {
     state.localOrder.catalogItems = state.localOrder.catalogItems.filter((id) => id !== localRemove.dataset.localRemove);
@@ -196,7 +214,13 @@ el.searchInput.addEventListener('input', (event) => {
   render();
 });
 document.querySelector('#savedButton').addEventListener('click', () => el.savedDialog.showModal());
-document.querySelectorAll('.close-dialog').forEach((button) => button.addEventListener('click', () => el.savedDialog.close()));
+document.querySelector('#cartButton').addEventListener('click', () => el.cartDialog.showModal());
+document.querySelectorAll('.close-dialog').forEach((button) => button.addEventListener('click', () => button.closest('dialog').close()));
+document.querySelector('#goToCheckout').addEventListener('click', () => {
+  el.cartDialog.close();
+  document.querySelector('#local-order').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.localArea.focus({ preventScroll: true });
+});
 document.querySelector('#clearFilters').addEventListener('click', () => {
   state.festival = 'all'; state.category = 'all'; state.query = ''; el.searchInput.value = ''; render();
 });
