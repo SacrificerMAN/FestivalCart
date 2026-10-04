@@ -1,5 +1,5 @@
 import { FESTIVALS, getUpcomingFestivals } from './data/festivals.js';
-import { CATEGORIES } from './data/catalog.js';
+import { CATEGORIES } from './data/catalog.js?v=20261005-1';
 import { CatalogService } from './services/catalog-service.js';
 import { Analytics } from './services/analytics.js';
 import { AuthService } from './services/auth-service.js';
